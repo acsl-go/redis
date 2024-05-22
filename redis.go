@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -157,4 +158,50 @@ func (client *Client) SIsMember(ctx context.Context, key string, member interfac
 		return false, errors.Wrap(e, "RedisSHas")
 	}
 	return has, nil
+}
+
+func (client *Client) Incr(ctx context.Context, key string) (int64, error) {
+	key_str := client.config.Prefix + ":" + key
+	val, e := client.client.Incr(ctx, key_str).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisIncr")
+	}
+	return val, nil
+}
+
+func (client *Client) IncrEx(ctx context.Context, key string, ttl int) (int64, error) {
+	key_str := client.config.Prefix + ":" + key
+	val, e := client.client.Incr(ctx, key_str).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisIncr")
+	}
+	if ttl > 0 {
+		if e := client.Expire(ctx, key, ttl); e != nil {
+			fmt.Printf("RedisIncr:Expire: %v\n", e) // Only Output Error
+		}
+	}
+	return val, nil
+}
+
+func (client *Client) Decr(ctx context.Context, key string) (int64, error) {
+	key_str := client.config.Prefix + ":" + key
+	val, e := client.client.Decr(ctx, key_str).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisDecr")
+	}
+	return val, nil
+}
+
+func (client *Client) DecrEx(ctx context.Context, key string, ttl int) (int64, error) {
+	key_str := client.config.Prefix + ":" + key
+	val, e := client.client.Decr(ctx, key_str).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisDecr")
+	}
+	if ttl > 0 {
+		if e := client.Expire(ctx, key, ttl); e != nil {
+			fmt.Printf("RedisDecr:Expire: %v\n", e) // Only Output Error
+		}
+	}
+	return val, nil
 }
