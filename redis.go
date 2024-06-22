@@ -69,19 +69,41 @@ func (client *Client) SetEx(ctx context.Context, key string, v interface{}, ttl 
 	key_str := client.config.Prefix + ":" + key
 	data_str, e := json.Marshal(v)
 	if e != nil {
-		return "", errors.Wrap(e, "RedisSet:JSONMarshal")
+		return "", errors.Wrap(e, "RedisSetEx:JSONMarshal")
 	}
 
 	if e := client.client.Set(ctx, key_str, data_str, time.Duration(ttl)*time.Second).Err(); e != nil {
-		return "", errors.Wrap(e, "RedisSet")
+		return "", errors.Wrap(e, "RedisSetEx")
 	}
 
 	return string(data_str), nil
 }
 
+func (client *Client) SetNXEx(ctx context.Context, key string, v interface{}, ttl int) (bool, string, error) {
+	key_str := client.config.Prefix + ":" + key
+	data_str, e := json.Marshal(v)
+	if e != nil {
+		return false, "", errors.Wrap(e, "RedisSetNXEx:JSONMarshal")
+	}
+
+	if e := client.client.SetNX(ctx, key_str, data_str, time.Duration(ttl)*time.Second).Err(); e != nil {
+		if e == goredis.Nil {
+			return false, "", nil
+		}
+		return false, "", errors.Wrap(e, "RedisSetNXEx")
+	}
+
+	return true, string(data_str), nil
+}
+
 func (client *Client) Set(ctx context.Context, key string, v interface{}, ttl int) error {
 	_, e := client.SetEx(ctx, key, v, ttl)
 	return e
+}
+
+func (client *Client) SetNX(ctx context.Context, key string, v interface{}, ttl int) (bool, error) {
+	b, _, e := client.SetNXEx(ctx, key, v, ttl)
+	return b, e
 }
 
 func (client *Client) SetNXStr(ctx context.Context, key string, v string, ttl int) (bool, error) {
