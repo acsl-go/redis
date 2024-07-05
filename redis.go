@@ -182,6 +182,11 @@ func (client *Client) SIsMember(ctx context.Context, key string, member interfac
 	return has, nil
 }
 
+func (client *Client) SMemebers(ctx context.Context, key string) []string {
+	key_str := client.config.Prefix + ":" + key
+	return client.client.SMembers(ctx, key_str).Val()
+}
+
 func (client *Client) Incr(ctx context.Context, key string) (int64, error) {
 	key_str := client.config.Prefix + ":" + key
 	val, e := client.client.Incr(ctx, key_str).Result()
