@@ -165,6 +165,11 @@ func (client *Client) SAdd(ctx context.Context, key string, members ...interface
 	return nil
 }
 
+func (client *Client) SCard(ctx context.Context, key string) int64 {
+	key_str := client.config.Prefix + ":" + key
+	return client.client.SCard(ctx, key_str).Val()
+}
+
 func (client *Client) SRem(ctx context.Context, key string, members ...interface{}) error {
 	key_str := client.config.Prefix + ":" + key
 	if e := client.client.SRem(ctx, key_str, members...).Err(); e != nil {
