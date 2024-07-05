@@ -182,7 +182,7 @@ func (client *Client) SIsMember(ctx context.Context, key string, member interfac
 	return has, nil
 }
 
-func (client *Client) SMemebers(ctx context.Context, key string) []string {
+func (client *Client) SMembers(ctx context.Context, key string) []string {
 	key_str := client.config.Prefix + ":" + key
 	return client.client.SMembers(ctx, key_str).Val()
 }
