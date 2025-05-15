@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -306,6 +307,14 @@ func (client *Client) HGet(ctx context.Context, key string, field string) (strin
 		return "", errors.Wrap(e, "RedisHGet")
 	}
 	return val, nil
+}
+
+func (client *Client) HGetI(ctx context.Context, key string, field string) (int64, error) {
+	str, err := client.HGet(ctx, key, field)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(str, 10, 64)
 }
 
 func (client *Client) HSet(ctx context.Context, key string, field string, value interface{}) error {
