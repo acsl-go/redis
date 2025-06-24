@@ -45,6 +45,10 @@ func NewClient(cfg *Config) (*Client, error) {
 	}, nil
 }
 
+func (client *Client) Client() goredis.Cmdable {
+	return client.client
+}
+
 func (client *Client) Get(ctx context.Context, key string, v interface{}) error {
 	key_str := client.prefix + key
 	data_str, e := client.client.Get(ctx, key_str).Result()
@@ -412,4 +416,24 @@ func (client *Client) HSetEx(ctx context.Context, key string, field string, valu
 		}
 	}
 	return nil
+}
+
+func (client *Client) ZAddMember(ctx context.Context, key string, member interface{}, score float64) error {
+	key_str := client.prefix + key
+	if e := client.client.ZAdd(ctx, key_str, goredis.Z{
+		Member: member,
+		Score:  score,
+	}).Err(); e != nil {
+		return errors.Wrap(e, "RedisZAddMember")
+	}
+	return nil
+}
+
+func (client *Client) ZRangeWithScores(ctx context.Context, key string, start int64, stop int64) ([]goredis.Z, error) {
+	key_str := client.prefix + key
+	val, e := client.client.ZRangeWithScores(ctx, key_str, start, stop).Result()
+	if e != nil {
+		return nil, errors.Wrap(e, "RedisZRangeWithScore")
+	}
+	return val, nil
 }
