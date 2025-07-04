@@ -98,11 +98,13 @@ func (client *Client) SetNXEx(ctx context.Context, key string, v interface{}, tt
 		return false, "", errors.Wrap(e, "RedisSetNXEx:JSONMarshal")
 	}
 
-	if e := client.client.SetNX(ctx, key_str, data_str, time.Duration(ttl)*time.Second).Err(); e != nil {
+	if b, e := client.client.SetNX(ctx, key_str, data_str, time.Duration(ttl)*time.Second).Result(); e != nil {
 		if e == goredis.Nil {
 			return false, "", nil
 		}
 		return false, "", errors.Wrap(e, "RedisSetNXEx")
+	} else if !b {
+		return false, "", nil
 	}
 
 	return true, string(data_str), nil
@@ -120,11 +122,13 @@ func (client *Client) SetNX(ctx context.Context, key string, v interface{}, ttl 
 
 func (client *Client) SetNXStr(ctx context.Context, key string, v string, ttl int) (bool, error) {
 	key_str := client.prefix + key
-	if e := client.client.SetNX(ctx, key_str, v, time.Duration(ttl)*time.Second).Err(); e != nil {
+	if b, e := client.client.SetNX(ctx, key_str, v, time.Duration(ttl)*time.Second).Result(); e != nil {
 		if e == goredis.Nil {
 			return false, nil
 		}
 		return false, errors.Wrap(e, "RedisSetNX")
+	} else if !b {
+		return false, nil
 	}
 	return true, nil
 }
