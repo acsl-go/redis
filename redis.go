@@ -71,7 +71,8 @@ func (client *Client) Get(ctx context.Context, key string, v interface{}) error 
 }
 
 func (client *Client) Expire(ctx context.Context, key string, ttl int) error {
-	if e := client.client.Expire(ctx, key, time.Duration(ttl)*time.Second).Err(); e != nil {
+	key_str := client.prefix + key
+	if e := client.client.Expire(ctx, key_str, time.Duration(ttl)*time.Second).Err(); e != nil {
 		return errors.Wrap(e, "RedisExpire")
 	}
 	return nil
@@ -111,12 +112,14 @@ func (client *Client) SetNXEx(ctx context.Context, key string, v interface{}, tt
 }
 
 func (client *Client) Set(ctx context.Context, key string, v interface{}, ttl int) error {
-	_, e := client.SetEx(ctx, key, v, ttl)
+	key_str := client.prefix + key
+	_, e := client.SetEx(ctx, key_str, v, ttl)
 	return e
 }
 
 func (client *Client) SetNX(ctx context.Context, key string, v interface{}, ttl int) (bool, error) {
-	b, _, e := client.SetNXEx(ctx, key, v, ttl)
+	key_str := client.prefix + key
+	b, _, e := client.SetNXEx(ctx, key_str, v, ttl)
 	return b, e
 }
 
@@ -318,7 +321,8 @@ func (client *Client) HGet(ctx context.Context, key string, field string) (strin
 }
 
 func (client *Client) HGetI(ctx context.Context, key string, field string) (int64, error) {
-	str, err := client.HGet(ctx, key, field)
+	key_str := client.prefix + key
+	str, err := client.HGet(ctx, key_str, field)
 	if err != nil {
 		return 0, err
 	}
@@ -436,6 +440,15 @@ func (client *Client) ZAddMember(ctx context.Context, key string, member interfa
 func (client *Client) ZRangeWithScores(ctx context.Context, key string, start int64, stop int64) ([]goredis.Z, error) {
 	key_str := client.prefix + key
 	val, e := client.client.ZRangeWithScores(ctx, key_str, start, stop).Result()
+	if e != nil {
+		return nil, errors.Wrap(e, "RedisZRangeWithScore")
+	}
+	return val, nil
+}
+
+func (client *Client) ZRevRangeWithScores(ctx context.Context, key string, start int64, stop int64) ([]goredis.Z, error) {
+	key_str := client.prefix + key
+	val, e := client.client.ZRevRangeWithScores(ctx, key_str, start, stop).Result()
 	if e != nil {
 		return nil, errors.Wrap(e, "RedisZRangeWithScore")
 	}
