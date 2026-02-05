@@ -112,14 +112,12 @@ func (client *Client) SetNXEx(ctx context.Context, key string, v interface{}, tt
 }
 
 func (client *Client) Set(ctx context.Context, key string, v interface{}, ttl int) error {
-	key_str := client.prefix + key
-	_, e := client.SetEx(ctx, key_str, v, ttl)
+	_, e := client.SetEx(ctx, key, v, ttl)
 	return e
 }
 
 func (client *Client) SetNX(ctx context.Context, key string, v interface{}, ttl int) (bool, error) {
-	key_str := client.prefix + key
-	b, _, e := client.SetNXEx(ctx, key_str, v, ttl)
+	b, _, e := client.SetNXEx(ctx, key, v, ttl)
 	return b, e
 }
 
@@ -321,7 +319,7 @@ func (client *Client) HGet(ctx context.Context, key string, field string) (strin
 }
 
 func (client *Client) HGetI(ctx context.Context, key string, field string) (int64, error) {
-	key_str := client.prefix + key
+	key_str := key
 	str, err := client.HGet(ctx, key_str, field)
 	if err != nil {
 		return 0, err
