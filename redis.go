@@ -218,6 +218,24 @@ func (client *Client) Incr(ctx context.Context, key string) (int64, error) {
 	return val, nil
 }
 
+func (client *Client) IncrBy(ctx context.Context, key string, val int64) (int64, error) {
+	key_str := client.prefix + key
+	val, e := client.client.IncrBy(ctx, key_str, val).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisIncrBy")
+	}
+	return val, nil
+}
+
+func (client *Client) IncrByFloat(ctx context.Context, key string, val float64) (float64, error) {
+	key_str := client.prefix + key
+	val, e := client.client.IncrByFloat(ctx, key_str, val).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisIncrByFloat")
+	}
+	return val, nil
+}
+
 func (client *Client) IncrEx(ctx context.Context, key string, ttl int) (int64, error) {
 	key_str := client.prefix + key
 	val, e := client.client.Incr(ctx, key_str).Result()
@@ -237,6 +255,24 @@ func (client *Client) Decr(ctx context.Context, key string) (int64, error) {
 	val, e := client.client.Decr(ctx, key_str).Result()
 	if e != nil {
 		return 0, errors.Wrap(e, "RedisDecr")
+	}
+	return val, nil
+}
+
+func (client *Client) DecrBy(ctx context.Context, key string, val int64) (int64, error) {
+	key_str := client.prefix + key
+	val, e := client.client.DecrBy(ctx, key_str, val).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisDecrBy")
+	}
+	return val, nil
+}
+
+func (client *Client) DecrByFloat(ctx context.Context, key string, val float64) (float64, error) {
+	key_str := client.prefix + key
+	val, e := client.client.IncrByFloat(ctx, key_str, -val).Result()
+	if e != nil {
+		return 0, errors.Wrap(e, "RedisDecrByFloat")
 	}
 	return val, nil
 }
