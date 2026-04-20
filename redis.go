@@ -19,6 +19,7 @@ type Client struct {
 
 var (
 	ErrNotFound = errors.New("redis: key not found")
+	ErrConflict = errors.New("redis: key already exists")
 )
 
 func NewClient(cfg *Config) (*Client, error) {
@@ -294,6 +295,9 @@ func (client *Client) DecrEx(ctx context.Context, key string, ttl int) (int64, e
 func (client *Client) BFReserve(ctx context.Context, key string, size int64, errorRate float64) error {
 	key_str := client.prefix + key
 	if e := client.client.BFReserve(ctx, key_str, errorRate, size).Err(); e != nil {
+		if e.Error() == "ERR item exists" {
+			return ErrConflict
+		}
 		return errors.Wrap(e, "RedisBFReserve")
 	}
 	return nil
