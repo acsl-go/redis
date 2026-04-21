@@ -364,7 +364,15 @@ func (client *Client) HGetI(ctx context.Context, key string, field string) (int6
 	if err != nil {
 		return 0, err
 	}
-	return strconv.ParseInt(str, 10, 64)
+	val, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		valf, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0, err
+		}
+		return int64(valf), nil
+	}
+	return val, nil
 }
 
 func (client *Client) HSet(ctx context.Context, key string, field string, value interface{}) error {
