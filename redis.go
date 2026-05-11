@@ -483,6 +483,14 @@ func (client *Client) ZAddMember(ctx context.Context, key string, member interfa
 	return nil
 }
 
+func (client *Client) ZRemMember(ctx context.Context, key string, members ...interface{}) error {
+	key_str := client.prefix + key
+	if e := client.client.ZRem(ctx, key_str, members...).Err(); e != nil {
+		return errors.Wrap(e, "RedisZRemMember")
+	}
+	return nil
+}
+
 func (client *Client) ZRangeWithScores(ctx context.Context, key string, start int64, stop int64) ([]goredis.Z, error) {
 	key_str := client.prefix + key
 	val, e := client.client.ZRangeWithScores(ctx, key_str, start, stop).Result()
